@@ -60,8 +60,8 @@ button.sm{width:auto;padding:5px 10px;margin:0;font-size:.82rem}
 <body>
 <main>
 <nav class="navlinks" aria-label="Kalkulator lain">
-  <a href="../">Pasien bisa timbang</a>
-  <a href="./" class="cur" aria-current="page">Pasien tidak bisa timbang</a>
+  <a href="https://maulanarh.github.io/dryweightcalculator/">Pasien bisa timbang</a>
+  <a href="https://maulanarh.github.io/dwtanpatimbang/" class="cur" aria-current="page">Pasien tidak bisa timbang</a>
 </nav>
 <h1>Kalkulator BB kering HD tanpa timbang</h1>
 <p class="sub">Untuk pasien yang tidak bisa ditimbang. Acuan: BB terakhir yang tertimbang, dikoreksi langkah probing bertahap, dan tanda hipo/hipervolemia pada sesi terakhir. Setiap sesi bisa disimpan ke riwayat dan dimuat lagi pada sesi berikutnya.</p>
@@ -90,10 +90,17 @@ button.sm{width:auto;padding:5px 10px;margin:0;font-size:.82rem}
     <h2>2. UF sesi terakhir</h2>
     <div class="row">
       <div><label class="f" for="net">UF bersih sesi terakhir (mL)</label><input id="net" type="number" step="50" value="2000"></div>
-      <div><label class="f" for="intake">Asupan selama HD (mL)</label><input id="intake" type="number" step="50" value="300"></div>
       <div><label class="f" for="dur">Durasi HD (jam)</label><input id="dur" type="number" step="0.5" value="4.5"></div>
     </div>
-    <p class="hint">UF bersih = UF mesin dikurangi asupan selama HD. Pakai sesi terakhir yang tercapai tanpa gejala sebagai dasar akumulasi cairan antar-HD.</p>
+    <h2 style="margin:14px 0 8px">Cairan yang masuk selama HD (mL)</h2>
+    <div class="row">
+      <div><label class="f" for="in_oral">Minum / makan</label><input id="in_oral" type="number" step="50" min="0" value="100"></div>
+      <div><label class="f" for="in_prim">Sisa priming + washout</label><input id="in_prim" type="number" step="50" min="0" value="200"></div>
+      <div><label class="f" for="in_trf">Transfusi</label><input id="in_trf" type="number" step="50" min="0" value="0"></div>
+      <div><label class="f" for="in_flush">Flushing NaCl</label><input id="in_flush" type="number" step="50" min="0" value="0"></div>
+    </div>
+    <p class="hint">Total cairan masuk selama HD: <b id="intakeTot">0 mL</b></p>
+    <p class="hint">UF bersih = UF mesin dikurangi total cairan masuk selama HD. Pakai sesi terakhir yang tercapai tanpa gejala sebagai dasar akumulasi cairan antar-HD.</p>
   </section>
 
   <section class="card">
@@ -135,7 +142,7 @@ button.sm{width:auto;padding:5px 10px;margin:0;font-size:.82rem}
     <div class="kv"><span>BB kering sesi berikutnya</span><span class="num" id="newdw">-</span></div>
     <div class="kv"><span>Perubahan dari BB kering saat ini</span><b id="delta">-</b></div>
     <div class="kv"><span>Rentang UF bersih</span><b id="range">-</b></div>
-    <div class="kv"><span>Target UF di mesin (bersih + asupan)</span><b id="goal">-</b></div>
+    <div class="kv"><span>Target UF di mesin (bersih + semua cairan masuk)</span><b id="goal">-</b></div>
     <div class="kv"><span>Laju UF pada target tengah</span><b id="rate">-</b></div>
     <div id="alerts"></div>
     <button id="apply">Simpan ke riwayat dan terapkan</button>
@@ -183,9 +190,10 @@ var last=null;
 
 function calc(){
   var s={};boxes.forEach(function(b){s[b.dataset.k]=b.checked});
-  var ref=val('ref'),cum=val('cum'),net=val('net'),intake=val('intake'),dur=val('dur')||4;
+  var ref=val('ref'),cum=val('cum'),net=val('net'),parts={oral:val('in_oral'),prim:val('in_prim'),trf:val('in_trf'),flush:val('in_flush')},intake=parts.oral+parts.prim+parts.trf+parts.flush,dur=val('dur')||4;
   var cur=ref+cum;
   $('curdw').textContent=f2(cur);
+  $('intakeTot').textContent=ml(intake);
   var hyper=HYPER.filter(function(k){return s[k]}).length;
   var hypo=HYPO.filter(function(k){return s[k]}).length;
   var risk=['r_old','r_dm','r_card','r_idh'].filter(function(k){return s[k]}).length;
@@ -226,13 +234,14 @@ function calc(){
   else if(rate>10)al.push(['amber','Laju UF di atas 10 mL/kg/jam, risiko hipotensi meningkat. Pertimbangkan durasi lebih panjang.']);
   if(Math.abs(newcum)>=2)al.push(['amber','Penyesuaian kumulatif dari BB terakhir ditimbang sudah '+f2(Math.abs(newcum))+' kg. Estimasi mulai kurang andal: verifikasi dengan timbangan alternatif, USG paru/IVC, atau bioimpedansi.']);
   if(delta!==0)why.push('UF bersih = UF sesi terakhir '+ml(net)+' '+(delta<0?'+':'−')+' '+ml(Math.abs(delta)*1000)+' = '+ml(center)+'. Rentang ±150 mL untuk penyesuaian klinis saat HD.');
-  else if(hyper===0&&hypo===0)why.push('UF bersih dipertahankan sama dengan sesi terakhir yang tanpa gejala.');
+  if(intake>0)why.push('Cairan masuk selama HD '+ml(intake)+' (minum '+ml(parts.oral)+', priming+washout '+ml(parts.prim)+', transfusi '+ml(parts.trf)+', flushing NaCl '+ml(parts.flush)+') ditambahkan ke target UF mesin.');
+  if(delta===0&&hyper===0&&hypo===0)why.push('UF bersih dipertahankan sama dengan sesi terakhir yang tanpa gejala.');
 
   $('verdictCard').className='card big '+(mode==='up'?'up':mode==='hold'?'hold':'');
   $('verdict').textContent=title;$('verdictSub').textContent=sub;
   $('why').innerHTML=why.map(function(w){return '<li>'+esc(w)+'</li>'}).join('');
   $('alerts').innerHTML=al.map(function(a){return '<div class="warn '+(a[0]==='bad'?'':'amber')+'">'+esc(a[1])+'</div>'}).join('');
-  last={title:title,cur:cur,delta:delta,newdw:newdw,newcum:newcum,lo:lo,hi:hi,center:center,goal:goal,ref:ref,intake:intake,dur:dur,
+  last={title:title,cur:cur,delta:delta,newdw:newdw,newcum:newcum,lo:lo,hi:hi,center:center,goal:goal,ref:ref,intake:intake,parts:parts,dur:dur,
         signs:HYPER.concat(HYPO).filter(function(k){return s[k]})};
 }
 
@@ -257,7 +266,7 @@ function loadPatient(){
   if(!p)return;
   var l=loadAll().filter(function(r){return r.pid===p}).sort(function(a,b){return b.ts-a.ts})[0];
   if(!l)return;
-  $('ref').value=l.ref;$('cum').value=Math.round(l.newcum*100)/100;$('net').value=Math.round(l.center);$('intake').value=l.intake;$('dur').value=l.dur;
+  $('ref').value=l.ref;$('cum').value=Math.round(l.newcum*100)/100;$('net').value=Math.round(l.center);var q=l.parts||{oral:l.intake,prim:0,trf:0,flush:0};$('in_oral').value=q.oral;$('in_prim').value=q.prim;$('in_trf').value=q.trf;$('in_flush').value=q.flush;$('dur').value=l.dur;
   boxes.forEach(function(b){b.checked=false});
   $('loadmsg').innerHTML='<div class="warn info">Data dimuat dari sesi '+esc(fdate(l.date))+'. Ganti UF bersih dengan UF aktual sesi tersebut, lalu centang tanda yang muncul.</div>';
 }
