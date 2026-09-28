@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Kalkulator BB Kering HD (tanpa timbang)</title>
+<style>
+:root{--bg:#f4f7f8;--card:#fff;--ink:#14232b;--mute:#5a6b73;--line:#d5e0e4;--acc:#0f6e7a;--accbg:#e2f1f3;--up:#b45309;--upbg:#fdf0dc;--bad:#b42318;--badbg:#fde7e4;--btn:#fff;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1a1f;--card:#17262d;--ink:#e6eef1;--mute:#93a6ae;--line:#2b3f48;--acc:#5cc3d0;--accbg:#173b42;--up:#f0b45c;--upbg:#3a2c12;--bad:#ff8a7d;--badbg:#421c18;--btn:#06262b}}
+:root[data-theme="dark"]{--bg:#0f1a1f;--card:#17262d;--ink:#e6eef1;--mute:#93a6ae;--line:#2b3f48;--acc:#5cc3d0;--accbg:#173b42;--up:#f0b45c;--upbg:#3a2c12;--bad:#ff8a7d;--badbg:#421c18;--btn:#06262b}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:960px;margin:0 auto;padding:20px 16px 48px}
+h1{font-size:1.5rem;margin:0 0 4px;letter-spacing:-.01em}
+h2{font-size:1rem;margin:0 0 10px}
+.sub{color:var(--mute);margin:0 0 18px;max-width:64ch}
+.grid{display:grid;gap:14px;grid-template-columns:1fr}
+@media(min-width:800px){.grid{grid-template-columns:1.05fr .95fr;align-items:start}.sticky{position:sticky;top:12px}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px;margin-bottom:14px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+label.f{display:block;font-size:.85rem;color:var(--mute);margin-bottom:2px}
+input[type=number],input[type=text],input[type=date]{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);font:inherit}
+input:focus-visible,button:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.chk{display:flex;gap:9px;align-items:flex-start;padding:6px 0;cursor:pointer;font-size:.95rem}
+.chk input{margin-top:4px;width:18px;height:18px;flex:none}
+.hint{font-size:.82rem;color:var(--mute);margin-top:6px}
+.big{border-left:6px solid var(--acc);background:var(--accbg)}
+.big.up{border-left-color:var(--up);background:var(--upbg)}
+.big.hold{border-left-color:var(--mute)}
+.verdict{font-size:1.25rem;font-weight:700;margin:0 0 2px}
+.kv{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid var(--line)}
+.kv:last-child{border-bottom:0}
+.kv b{font-variant-numeric:tabular-nums;text-align:right}
+.num{font-size:1.9rem;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.1}
+ul{margin:6px 0 0;padding-left:20px}
+li{margin:3px 0}
+.warn{background:var(--badbg);color:var(--bad);border-radius:8px;padding:10px 12px;margin-top:10px;font-size:.92rem}
+.warn.amber{background:var(--upbg);color:var(--up)}
+.warn.info{background:var(--accbg);color:var(--acc)}
+button{font:inherit;font-weight:600;padding:11px 14px;border-radius:8px;border:0;background:var(--acc);color:var(--btn);cursor:pointer;width:100%;margin-top:12px}
+button.ghost{background:transparent;color:var(--acc);border:1px solid var(--acc)}
+button.sm{width:auto;padding:5px 10px;margin:0;font-size:.82rem}
+.hrow{border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin-bottom:8px}
+.hrow .top{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
+.hrow .t{font-weight:700}
+.hrow .m{font-size:.86rem;color:var(--mute);margin-top:2px}
+.pills{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+.pill{font-size:.75rem;padding:1px 8px;border-radius:99px;border:1px solid var(--line);color:var(--mute)}
+.pill.h{border-color:var(--acc);color:var(--acc)}
+.pill.l{border-color:var(--up);color:var(--up)}
+.hbar{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+.navlinks{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px}
+.navlinks a{font-size:.88rem;font-weight:600;text-decoration:none;color:var(--acc);border:1px solid var(--acc);border-radius:99px;padding:5px 14px}
+.navlinks a.cur{background:var(--acc);color:var(--btn);pointer-events:none}
+.navlinks a:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.foot{font-size:.82rem;color:var(--mute);margin-top:18px}
+</style>
+</head>
+<body>
+<main>
+<nav class="navlinks" aria-label="Kalkulator lain">
+  <a href="../">Pasien bisa timbang</a>
+  <a href="./" class="cur" aria-current="page">Pasien tidak bisa timbang</a>
+</nav>
+<h1>Kalkulator BB kering HD tanpa timbang</h1>
+<p class="sub">Untuk pasien yang tidak bisa ditimbang. Acuan: BB terakhir yang tertimbang, dikoreksi langkah probing bertahap, dan tanda hipo/hipervolemia pada sesi terakhir. Setiap sesi bisa disimpan ke riwayat dan dimuat lagi pada sesi berikutnya.</p>
+
+<div class="grid">
+<div>
+  <section class="card">
+    <h2>Pasien dan sesi</h2>
+    <div class="row">
+      <div><label class="f" for="pid">Nama / No. RM pasien</label><input id="pid" type="text" list="pl" autocomplete="off" placeholder="mis. Tn. B / RM 0123"><datalist id="pl"></datalist></div>
+      <div><label class="f" for="date">Tanggal sesi</label><input id="date" type="date"></div>
+    </div>
+    <div id="loadmsg"></div>
+  </section>
+
+  <section class="card">
+    <h2>1. Acuan berat</h2>
+    <div class="row">
+      <div><label class="f" for="ref">BB terakhir ditimbang (kg)</label><input id="ref" type="number" step="0.1" value="55"></div>
+      <div><label class="f" for="cum">Total penyesuaian BB kering sejak itu (kg)</label><input id="cum" type="number" step="0.25" value="0"></div>
+    </div>
+    <p class="hint">Minus bila BB kering sudah diturunkan (mis. -0,5), plus bila dinaikkan. BB kering saat ini: <b id="curdw">-</b> kg</p>
+  </section>
+
+  <section class="card">
+    <h2>2. UF sesi terakhir</h2>
+    <div class="row">
+      <div><label class="f" for="net">UF bersih sesi terakhir (mL)</label><input id="net" type="number" step="50" value="2000"></div>
+      <div><label class="f" for="intake">Asupan selama HD (mL)</label><input id="intake" type="number" step="50" value="300"></div>
+      <div><label class="f" for="dur">Durasi HD (jam)</label><input id="dur" type="number" step="0.5" value="4.5"></div>
+    </div>
+    <p class="hint">UF bersih = UF mesin dikurangi asupan selama HD. Pakai sesi terakhir yang tercapai tanpa gejala sebagai dasar akumulasi cairan antar-HD.</p>
+  </section>
+
+  <section class="card">
+    <h2>3. Tanda hipervolemia</h2>
+    <label class="chk"><input type="checkbox" data-k="edema"> Edema perifer / edema pretibial baru atau bertambah</label>
+    <label class="chk"><input type="checkbox" data-k="sesak"> Sesak atau ortopnea</label>
+    <label class="chk"><input type="checkbox" data-k="ronki"> Ronki basah paru</label>
+    <label class="chk"><input type="checkbox" data-k="jvp"> JVP meningkat</label>
+    <label class="chk"><input type="checkbox" data-k="htn"> TD pre-HD tinggi menetap (mis. sistol ≥150 walau obat sesuai)</label>
+    <label class="chk"><input type="checkbox" data-k="severe"> Sesak berat atau SpO₂ &lt;94%</label>
+  </section>
+
+  <section class="card">
+    <h2>4. Tanda hipovolemia</h2>
+    <label class="chk"><input type="checkbox" data-k="idh"> Hipotensi intradialisis (TD turun bermakna atau perlu intervensi)</label>
+    <label class="chk"><input type="checkbox" data-k="kram"> Kram otot saat HD</label>
+    <label class="chk"><input type="checkbox" data-k="mual"> Mual, pusing, atau lemas saat HD</label>
+    <label class="chk"><input type="checkbox" data-k="lowbp"> TD pre-HD rendah atau hipotensi ortostatik</label>
+    <label class="chk"><input type="checkbox" data-k="recov"> Pemulihan pasca-HD lama (lemas &gt;1 jam)</label>
+  </section>
+
+  <section class="card">
+    <h2>5. Faktor risiko (langkah lebih hati-hati)</h2>
+    <label class="chk"><input type="checkbox" data-k="r_old"> Usia ≥65 tahun</label>
+    <label class="chk"><input type="checkbox" data-k="r_dm"> Diabetes / neuropati otonom</label>
+    <label class="chk"><input type="checkbox" data-k="r_card"> Penyakit jantung / EF rendah</label>
+    <label class="chk"><input type="checkbox" data-k="r_idh"> Riwayat hipotensi intradialisis berulang</label>
+  </section>
+</div>
+
+<div class="sticky">
+  <section class="card big" id="verdictCard">
+    <p class="verdict" id="verdict">-</p>
+    <p class="hint" id="verdictSub" style="margin:0"></p>
+  </section>
+
+  <section class="card">
+    <h2>Rencana sesi berikutnya</h2>
+    <div class="kv"><span>BB kering sesi berikutnya</span><span class="num" id="newdw">-</span></div>
+    <div class="kv"><span>Perubahan dari BB kering saat ini</span><b id="delta">-</b></div>
+    <div class="kv"><span>Rentang UF bersih</span><b id="range">-</b></div>
+    <div class="kv"><span>Target UF di mesin (bersih + asupan)</span><b id="goal">-</b></div>
+    <div class="kv"><span>Laju UF pada target tengah</span><b id="rate">-</b></div>
+    <div id="alerts"></div>
+    <button id="apply">Simpan ke riwayat dan terapkan</button>
+    <button id="reset" class="ghost">Hapus semua centang</button>
+  </section>
+
+  <section class="card">
+    <h2>Dasar rekomendasi</h2>
+    <ul id="why"></ul>
+  </section>
+</div>
+</div>
+
+<section class="card" style="margin-top:6px">
+  <h2 id="htitle">Riwayat</h2>
+  <div id="hist"></div>
+  <div class="hbar">
+    <button class="ghost sm" id="csv">Ekspor CSV</button>
+    <button class="ghost sm" id="clr">Hapus riwayat pasien ini</button>
+  </div>
+  <p class="hint">Riwayat tersimpan di peramban perangkat ini saja. Ekspor CSV secara berkala sebagai cadangan, dan hindari mode privat.</p>
+</section>
+
+<p class="foot">Alat bantu hitung, bukan pengganti penilaian klinis. Keputusan BB kering dan target UF ditetapkan oleh dokter/nefrolog yang menangani. Tanpa timbangan, kesalahan estimasi menumpuk antar-sesi, jadi lakukan penilaian klinis dan verifikasi objektif berkala.</p>
+</main>
+
+<script>
+(function(){
+var $=function(i){return document.getElementById(i)};
+var boxes=document.querySelectorAll('input[type=checkbox]');
+var KEY='hdDryWeightHistory.v1';
+var mem=[];
+var LBL={edema:'Edema',sesak:'Sesak/ortopnea',ronki:'Ronki',jvp:'JVP↑',htn:'TD pre-HD tinggi',severe:'Sesak berat/SpO₂ rendah',idh:'Hipotensi intradialisis',kram:'Kram',mual:'Mual/pusing/lemas',lowbp:'TD pre-HD rendah',recov:'Pemulihan lama'};
+var HYPER=['edema','sesak','ronki','jvp','htn','severe'],HYPO=['idh','kram','mual','lowbp','recov'];
+function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function val(i){var v=parseFloat($(i).value);return isNaN(v)?0:v}
+function f2(x){return x.toFixed(2).replace('.',',')}
+function ml(x){return Math.round(x).toLocaleString('id-ID')+' mL'}
+function loadAll(){try{var r=localStorage.getItem(KEY);return r?JSON.parse(r):mem}catch(e){return mem}}
+function saveAll(a){mem=a;try{localStorage.setItem(KEY,JSON.stringify(a))}catch(e){}}
+function today(){var d=new Date();return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2)}
+function fdate(s){var p=s.split('-');return p.length===3?p[2]+'/'+p[1]+'/'+p[0]:s}
+$('date').value=today();
+var last=null;
+
+function calc(){
+  var s={};boxes.forEach(function(b){s[b.dataset.k]=b.checked});
+  var ref=val('ref'),cum=val('cum'),net=val('net'),intake=val('intake'),dur=val('dur')||4;
+  var cur=ref+cum;
+  $('curdw').textContent=f2(cur);
+  var hyper=HYPER.filter(function(k){return s[k]}).length;
+  var hypo=HYPO.filter(function(k){return s[k]}).length;
+  var risk=['r_old','r_dm','r_card','r_idh'].filter(function(k){return s[k]}).length;
+  var major=s.sesak||s.ronki||s.severe;
+  var why=[],al=[],delta=0,mode='hold',title='',sub='';
+
+  if(hyper>0&&hypo>0){
+    title='Tahan BB kering, evaluasi dulu';sub='Tanda hiper dan hipovolemia muncul bersamaan.';
+    why.push('Ada '+hyper+' tanda hipervolemia dan '+hypo+' tanda hipovolemia sekaligus. Mengubah BB kering ke satu arah berisiko memperburuk yang lain.');
+    al.push(['amber','Pertimbangkan: UF profiling atau profil natrium, perpanjang durasi/tambah frekuensi, tinjau obat antihipertensi dan waktu minumnya, cek albumin, fungsi jantung, dan suhu dialisat.']);
+  }else if(hypo>0){
+    mode='up';delta=(s.idh&&hypo>=2)?0.5:0.25;
+    title='Naikkan BB kering '+f2(delta)+' kg';sub='Ada tanda hipovolemia tanpa tanda kelebihan cairan.';
+    why.push('Tanda hipovolemia: '+hypo+' (hipotensi intradialisis, kram, gejala, atau TD rendah).');
+    why.push(delta===0.5?'Hipotensi intradialisis disertai tanda lain, maka langkah 0,5 kg.':'Tanda ringan atau tunggal, maka langkah 0,25 kg.');
+  }else if(hyper>0){
+    mode='down';delta=(hyper>=3||major)?-0.5:-0.25;
+    if(risk>=2&&delta===-0.5&&!s.severe){delta=-0.25;why.push('Risiko ≥2 (usia, DM, jantung, riwayat hipotensi), langkah dibatasi 0,25 kg.')}
+    title='Turunkan BB kering '+f2(Math.abs(delta))+' kg';sub='Ada tanda kelebihan cairan tanpa tanda hipovolemia.';
+    why.push('Tanda hipervolemia: '+hyper+', tidak ada tanda hipovolemia pada sesi terakhir.');
+    why.push(delta===-0.5?'Tanda banyak atau bermakna (sesak/ronki), maka langkah 0,5 kg.':'Tanda ringan atau risiko tinggi, maka langkah 0,25 kg.');
+  }else{
+    title='Pertahankan BB kering';sub='Tidak ada tanda hiper atau hipovolemia.';
+    why.push('Tanpa tanda kelebihan maupun kekurangan cairan, BB kering saat ini dianggap sesuai.');
+  }
+  if(s.severe)al.push(['bad','Sesak berat atau SpO₂ <94%: nilai segera. Mungkin perlu UF lebih agresif atau sesi tambahan atas keputusan dokter, bukan hanya probing bertahap.']);
+  if(risk>0&&delta<0)why.push('Faktor risiko dipertimbangkan, pantau TD tiap 30 menit saat HD.');
+
+  var newdw=cur+delta,newcum=cum+delta;
+  var center=Math.max(0,net-delta*1000),lo=Math.max(0,center-150),hi=center+150;
+  var goal=center+intake,rate=newdw>0?goal/newdw/dur:0;
+  $('newdw').textContent=f2(newdw)+' kg';
+  $('delta').textContent=(delta>0?'+':delta<0?'−':'')+f2(Math.abs(delta))+' kg';
+  $('range').textContent=ml(lo)+' – '+ml(hi);
+  $('goal').textContent=ml(goal);
+  $('rate').textContent=rate.toFixed(1).replace('.',',')+' mL/kg/jam';
+  if(rate>13)al.push(['bad','Laju UF melebihi 13 mL/kg/jam. Perpanjang durasi hingga sekitar '+(goal/(13*newdw)).toFixed(1).replace('.',',')+' jam atau kurangi target UF.']);
+  else if(rate>10)al.push(['amber','Laju UF di atas 10 mL/kg/jam, risiko hipotensi meningkat. Pertimbangkan durasi lebih panjang.']);
+  if(Math.abs(newcum)>=2)al.push(['amber','Penyesuaian kumulatif dari BB terakhir ditimbang sudah '+f2(Math.abs(newcum))+' kg. Estimasi mulai kurang andal: verifikasi dengan timbangan alternatif, USG paru/IVC, atau bioimpedansi.']);
+  if(delta!==0)why.push('UF bersih = UF sesi terakhir '+ml(net)+' '+(delta<0?'+':'−')+' '+ml(Math.abs(delta)*1000)+' = '+ml(center)+'. Rentang ±150 mL untuk penyesuaian klinis saat HD.');
+  else if(hyper===0&&hypo===0)why.push('UF bersih dipertahankan sama dengan sesi terakhir yang tanpa gejala.');
+
+  $('verdictCard').className='card big '+(mode==='up'?'up':mode==='hold'?'hold':'');
+  $('verdict').textContent=title;$('verdictSub').textContent=sub;
+  $('why').innerHTML=why.map(function(w){return '<li>'+esc(w)+'</li>'}).join('');
+  $('alerts').innerHTML=al.map(function(a){return '<div class="warn '+(a[0]==='bad'?'':'amber')+'">'+esc(a[1])+'</div>'}).join('');
+  last={title:title,cur:cur,delta:delta,newdw:newdw,newcum:newcum,lo:lo,hi:hi,center:center,goal:goal,ref:ref,intake:intake,dur:dur,
+        signs:HYPER.concat(HYPO).filter(function(k){return s[k]})};
+}
+
+function pname(){return $('pid').value.trim()}
+function render(){
+  var all=loadAll(),p=pname();
+  var names=[];all.forEach(function(r){if(r.pid&&names.indexOf(r.pid)<0)names.push(r.pid)});
+  $('pl').innerHTML=names.map(function(n){return '<option value="'+esc(n)+'">'}).join('');
+  var list=all.filter(function(r){return !p||r.pid===p}).sort(function(a,b){return a.date===b.date?b.ts-a.ts:(a.date<b.date?1:-1)});
+  $('htitle').textContent=p?'Riwayat: '+p:'Riwayat semua pasien';
+  if(!list.length){$('hist').innerHTML='<p class="hint">Belum ada riwayat. Simpan sesi pertama dengan tombol "Simpan ke riwayat dan terapkan".</p>';return}
+  $('hist').innerHTML=list.map(function(r){
+    var pills=(r.signs||[]).map(function(k){return '<span class="pill '+(HYPER.indexOf(k)>=0?'h':'l')+'">'+esc(LBL[k]||k)+'</span>'}).join('')||'<span class="pill">Tanpa tanda</span>';
+    return '<div class="hrow"><div class="top"><div><div class="t">'+esc(fdate(r.date))+(p?'':' · '+esc(r.pid||'Tanpa nama'))+': '+esc(r.title)+'</div>'+
+      '<div class="m">BB kering '+f2(r.cur)+' → '+f2(r.newdw)+' kg · UF bersih '+ml(r.lo)+' – '+ml(r.hi)+' · target mesin '+ml(r.goal)+'</div></div>'+
+      '<button class="ghost sm" data-del="'+r.ts+'">Hapus</button></div><div class="pills">'+pills+'</div></div>';
+  }).join('');
+}
+
+function loadPatient(){
+  var p=pname();$('loadmsg').innerHTML='';
+  if(!p)return;
+  var l=loadAll().filter(function(r){return r.pid===p}).sort(function(a,b){return b.ts-a.ts})[0];
+  if(!l)return;
+  $('ref').value=l.ref;$('cum').value=Math.round(l.newcum*100)/100;$('net').value=Math.round(l.center);$('intake').value=l.intake;$('dur').value=l.dur;
+  boxes.forEach(function(b){b.checked=false});
+  $('loadmsg').innerHTML='<div class="warn info">Data dimuat dari sesi '+esc(fdate(l.date))+'. Ganti UF bersih dengan UF aktual sesi tersebut, lalu centang tanda yang muncul.</div>';
+}
+
+$('pid').addEventListener('change',function(){loadPatient();calc();render()});
+$('pid').addEventListener('input',render);
+document.querySelectorAll('input').forEach(function(e){e.addEventListener('input',calc);e.addEventListener('change',calc)});
+$('apply').addEventListener('click',function(){
+  if(!last)return;
+  var all=loadAll();
+  var rec=Object.assign({ts:Date.now(),date:$('date').value||today(),pid:pname()||'Tanpa nama'},last);
+  all.push(rec);saveAll(all);
+  $('cum').value=Math.round(last.newcum*100)/100;
+  $('net').value=Math.round(last.center);
+  boxes.forEach(function(b){b.checked=false});
+  $('loadmsg').innerHTML='<div class="warn info">Tersimpan. Pada sesi berikutnya, perbarui UF bersih dengan UF aktual dan centang tanda yang muncul.</div>';
+  calc();render();
+});
+$('reset').addEventListener('click',function(){boxes.forEach(function(b){b.checked=false});calc()});
+$('hist').addEventListener('click',function(e){
+  var t=e.target.getAttribute&&e.target.getAttribute('data-del');if(!t)return;
+  saveAll(loadAll().filter(function(r){return String(r.ts)!==t}));render();
+});
+$('clr').addEventListener('click',function(){
+  var p=pname();
+  if(!confirm(p?'Hapus semua riwayat pasien "'+p+'"?':'Hapus SEMUA riwayat?'))return;
+  saveAll(p?loadAll().filter(function(r){return r.pid!==p}):[]);render();
+});
+$('csv').addEventListener('click',function(){
+  var p=pname(),rows=loadAll().filter(function(r){return !p||r.pid===p}).sort(function(a,b){return a.ts-b.ts});
+  var q=function(v){return '"'+String(v).replace(/"/g,'""')+'"'};
+  var out=[['Tanggal','Pasien','Keputusan','BB kering awal (kg)','BB kering berikutnya (kg)','UF bersih min (mL)','UF bersih maks (mL)','Target mesin (mL)','Tanda'].map(q).join(',')];
+  rows.forEach(function(r){out.push([r.date,r.pid,r.title,r.cur.toFixed(2),r.newdw.toFixed(2),Math.round(r.lo),Math.round(r.hi),Math.round(r.goal),(r.signs||[]).map(function(k){return LBL[k]||k}).join('; ')].map(q).join(','))});
+  var a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent('\ufeff'+out.join('\n'));a.download='riwayat-bb-kering-hd.csv';document.body.appendChild(a);a.click();a.remove();
+});
+calc();render();
+})();
+</script>
+</body>
+</html>
